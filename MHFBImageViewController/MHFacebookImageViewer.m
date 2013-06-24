@@ -31,16 +31,16 @@ static const CGFloat kMinImageScale = 1.0f;
 
 @interface MHFacebookImageViewer()<UIGestureRecognizerDelegate,UIScrollViewDelegate>{
     NSMutableArray *_gestures;
-    
+
     UIView *_blackMask;
     UIImageView * _imageView;
     UIScrollView * _scrollView;
     UIButton * _doneButton;
     UIView * _superView;
-    
+
     CGPoint _panOrigin;
     CGRect _originalFrameRelativeToScreen;
-    
+
     BOOL _isAnimating;
     BOOL _isDoneAnimating;
 }
@@ -71,27 +71,27 @@ static const CGFloat kMinImageScale = 1.0f;
     [UIApplication sharedApplication].statusBarHidden = YES;
     UIViewController *rootViewController = [UIApplication sharedApplication].keyWindow.rootViewController;
     CGRect windowBounds = rootViewController.view.bounds;
-    
+
     self.view = [[UIView alloc] initWithFrame:windowBounds];
     self.view.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-    
+
     _blackMask = [[UIView alloc] initWithFrame:windowBounds];
     _blackMask.backgroundColor = [UIColor blackColor];
     _blackMask.alpha = 0.0f;
     _blackMask.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
     [self.view insertSubview:_blackMask atIndex:0];
-    
+
     _scrollView = [[UIScrollView alloc]initWithFrame:windowBounds];
     _scrollView.delegate = self;
     [self.view addSubview:_scrollView];
-    
+
     _doneButton = [UIButton buttonWithType:UIButtonTypeCustom];
     [_doneButton addTarget:self
                     action:@selector(close:)
           forControlEvents:UIControlEventTouchUpInside];
     [_doneButton setImage:[UIImage imageNamed:@"Done"] forState:UIControlStateNormal];
     _doneButton.frame = CGRectMake(windowBounds.size.width - (51.0f + 9.0f),15.0f, 51.0f, 26.0f);
-    
+
     _superView = _senderView.superview;
     // Compute Original Frame Relative To Screen
     CGRect newFrame = [_senderView convertRect:[[UIScreen mainScreen] applicationFrame] toView:nil];
@@ -109,7 +109,7 @@ static const CGFloat kMinImageScale = 1.0f;
         _imageView = [[UIImageView alloc]initWithFrame:_originalFrameRelativeToScreen];
         _imageView.contentMode = UIViewContentModeScaleAspectFill;
         [_scrollView addSubview:_imageView];
-        
+
         if(_imageURL) {
             __block UIImageView * _imageViewInTheBlock = _imageView;
             __block MHFacebookImageViewer * _justMeInsideTheBlock = self;
@@ -118,14 +118,14 @@ static const CGFloat kMinImageScale = 1.0f;
                 [_scrollViewInsideBlock setZoomScale:1.0f animated:YES];
                 [_imageViewInTheBlock setImage:image];
                 _imageViewInTheBlock.frame = [_justMeInsideTheBlock centerFrameFromImage:_imageViewInTheBlock.image];
-                
+
             } failure:^(NSURLRequest *request, NSHTTPURLResponse *response, NSError *error) {
                 NSLog(@"Image From URL Not loaded");
             }];
         }else{
             [_imageView setImage:_senderView.image];
         }
-        
+
         UIViewController *rootViewController = [UIApplication sharedApplication].keyWindow.rootViewController;
         // Start animation on view did load
         [UIView animateWithDuration:0.4f delay:0.0f options:0 animations:^{
@@ -152,12 +152,12 @@ static const CGFloat kMinImageScale = 1.0f;
 #pragma mark - Compute the new size of image relative to width(window)
 - (CGRect) centerFrameFromImage:(UIImage*) image {
     if(!image) return CGRectZero;
-    
+
     CGRect windowBounds = self.view.bounds;
     CGSize newImageSize = [self imageResizeBaseOnWidth:windowBounds
                            .size.width oldWidth:image
                            .size.width oldHeight:image.size.height];
-    
+
     // Just fit it on the size of the screen
     newImageSize.height = MIN(windowBounds.size.height,newImageSize.height);
     return CGRectMake(0.0f, windowBounds.size.height/2 - newImageSize.height/2, newImageSize.width, newImageSize.height);
@@ -167,7 +167,7 @@ static const CGFloat kMinImageScale = 1.0f;
     CGFloat scaleFactor = newWidth / oldWidth;
     CGFloat newHeight = oldHeight * scaleFactor;
     return CGSizeMake(newWidth, newHeight);
-    
+
 }
 
 - (void)didReceiveMemoryWarning
@@ -217,12 +217,12 @@ static const CGFloat kMinImageScale = 1.0f;
     CGRect frame = _imageView.frame;
     frame.origin = CGPointMake(0, y);
     _imageView.frame = frame;
-    
+
     CGFloat yDiff = abs((y + _imageView.frame.size.height/2) - windowSize.height/2);
     _blackMask.alpha = MAX(1 - yDiff/(windowSize.height/2),kMinBlackMaskAlpha);
-    
+
     if ((panGesture.state == UIGestureRecognizerStateEnded || panGesture.state == UIGestureRecognizerStateCancelled) && _scrollView.zoomScale == 1.0f) {
-        
+
         if(_blackMask.alpha < 0.7) {
             [self dismissViewController];
         }else {
@@ -276,7 +276,7 @@ static const CGFloat kMinImageScale = 1.0f;
             _blackMask.alpha = 0.0f;
         }   completion:^(BOOL finished) {
             if (finished) {
-                
+
                 [self.view removeFromSuperview];
                 [self removeFromParentViewController];
                 [_superView addSubview:_senderView ];
@@ -284,7 +284,7 @@ static const CGFloat kMinImageScale = 1.0f;
                 _isAnimating =NO;
                 if(_closingBlock)
                     _closingBlock();
-                
+
             }
         }];
     });
@@ -300,19 +300,19 @@ static const CGFloat kMinImageScale = 1.0f;
 - (void)centerScrollViewContents {
     CGSize boundsSize = self.view.bounds.size;
     CGRect contentsFrame = _imageView.frame;
-    
+
     if (contentsFrame.size.width < boundsSize.width) {
         contentsFrame.origin.x = (boundsSize.width - contentsFrame.size.width) / 2.0f;
     } else {
         contentsFrame.origin.x = 0.0f;
     }
-    
+
     if (contentsFrame.size.height < boundsSize.height) {
         contentsFrame.origin.y = (boundsSize.height - contentsFrame.size.height) / 2.0f;
     } else {
         contentsFrame.origin.y = 0.0f;
     }
-    
+
     _imageView.frame = contentsFrame;
 }
 
@@ -335,19 +335,19 @@ static const CGFloat kMinImageScale = 1.0f;
     twoFingerTapGesture.numberOfTapsRequired = 1;
     twoFingerTapGesture.numberOfTouchesRequired = 2;
     [_scrollView addGestureRecognizer:twoFingerTapGesture];
-    
+
     UITapGestureRecognizer *singleTapRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(didSingleTap:)];
     singleTapRecognizer.numberOfTapsRequired = 1;
     singleTapRecognizer.numberOfTouchesRequired = 1;
     [_scrollView addGestureRecognizer:singleTapRecognizer];
-    
+
     UITapGestureRecognizer *doubleTapRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(didDobleTap:)];
     doubleTapRecognizer.numberOfTapsRequired = 2;
     doubleTapRecognizer.numberOfTouchesRequired = 1;
     [_scrollView addGestureRecognizer:doubleTapRecognizer];
-    
+
     [singleTapRecognizer requireGestureRecognizerToFail:doubleTapRecognizer];
-    
+
     _scrollView.minimumZoomScale = kMinImageScale;
     _scrollView.maximumZoomScale = kMaxImageScale;
     _scrollView.zoomScale = 1;
@@ -356,7 +356,7 @@ static const CGFloat kMinImageScale = 1.0f;
 
 #pragma mark - For Zooming
 - (void)didTwoFingerTap:(UITapGestureRecognizer*)recognizer {
-    
+
     CGFloat newZoomScale = _scrollView.zoomScale / 1.5f;
     newZoomScale = MAX(newZoomScale, _scrollView.minimumZoomScale);
     [_scrollView setZoomScale:newZoomScale animated:YES];
@@ -395,7 +395,7 @@ static const CGFloat kMinImageScale = 1.0f;
 - (void) zoomInZoomOut:(CGPoint)point {
     // Check if current Zoom Scale is greater than half of max scale then reduce zoom and vice versa
     CGFloat newZoomScale = _scrollView.zoomScale > (_scrollView.maximumZoomScale/2)?_scrollView.minimumZoomScale:_scrollView.maximumZoomScale;
-    
+
     CGSize scrollViewSize = _scrollView.bounds.size;
     CGFloat w = scrollViewSize.width / newZoomScale;
     CGFloat h = scrollViewSize.height / newZoomScale;
@@ -482,13 +482,14 @@ static const CGFloat kMinImageScale = 1.0f;
 
 #pragma mark - Handle Tap
 - (void) didTap:(MHFacebookImageViewerTapGestureRecognizer*)gestureRecognizer {
-    
+
     MHFacebookImageViewer * imageBrowser = [[MHFacebookImageViewer alloc]init];
     imageBrowser.senderView = self;
     imageBrowser.imageURL = gestureRecognizer.imageURL;
     imageBrowser.openingBlock = gestureRecognizer.openingBlock;
     imageBrowser.closingBlock = gestureRecognizer.closingBlock;
     if(self.image)
-        [imageBrowser presentFromRootViewController];
+        UIViewController *rootViewController = [UIApplication sharedApplication].keyWindow.rootViewController;
+        [imageBrowser presentFromViewController:rootViewController.presentedViewController ? rootViewController.presentedViewController : rootViewController];
 }
 @end
