@@ -488,8 +488,9 @@ static const CGFloat kMinImageScale = 1.0f;
     imageBrowser.imageURL = gestureRecognizer.imageURL;
     imageBrowser.openingBlock = gestureRecognizer.openingBlock;
     imageBrowser.closingBlock = gestureRecognizer.closingBlock;
-    if(self.image)
+    if(self.image) {
         UIViewController *rootViewController = [UIApplication sharedApplication].keyWindow.rootViewController;
         [imageBrowser presentFromViewController:rootViewController.presentedViewController ? rootViewController.presentedViewController : rootViewController];
+    }
 }
 @end
